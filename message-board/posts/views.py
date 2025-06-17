@@ -10,4 +10,5 @@ from django.views.generic import ListView
 from .models import Post
 
 class PostList(ListView):
-    model = Posttemplate_name = 'posts/post_list.html'
+    model = Post
+    template_name = 'posts/post_list.html'
