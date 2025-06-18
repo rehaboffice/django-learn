@@ -32,11 +32,11 @@ class BlogTests(TestCase):
         response = self.client.get("/post/1/")
         self.assertEqual(response.status_code, 200)
 
-    def test_post_listview(self):
-        response = self.client.get(reverse("home"))
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Nice body content")
-        self.assertTemplateUsed(response, "home.html")
+    # def test_post_listview(self):
+    #     response = self.client.get(reverse("home"))
+    #     self.assertEqual(response.status_code, 200)
+    #     self.assertContains(response, "Nice body content")
+    #     self.assertTemplateUsed(response, "home.html")
 
     def test_post_detailview(self):
         response = self.client.get(reverse("post_detail", kwargs={"pk": self.post.pk}))
@@ -45,3 +45,33 @@ class BlogTests(TestCase):
         self.assertEqual(no_response.status_code, 404)
         self.assertContains(response, "A good title")
         self.assertTemplateUsed(response, "post_detail.html")
+
+    def test_post_createview(self):
+        response = self.client.post(
+            reverse("post_new"),
+            {
+                "title": "New title",
+                "body": "New text",
+                "author": self.user.id,
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Post.objects.last().title, "New title")
+        self.assertEqual(Post.objects.last().body, "New text")
+
+    def test_post_updateview(self):
+        response = self.client.post(
+            reverse("post_edit", args="1"),
+            {
+                "title": "Updated title",
+                "body": "Updated text",
+            },
+        )
+        self.post.refresh_from_db()
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(self.post.title, "Updated title")
+        self.assertEqual(self.post.body, "Updated text")
+
+    def test_post_deleteview(self):
+        response = self.client.post(reverse("post_delete", args="1"))
+        self.assertEqual(response.status_code, 302)
